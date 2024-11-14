@@ -12,7 +12,7 @@
 }
 
 ## Execute Postgres container
-## docker exec -it postgres-container psql -U myuser -d mydatabase
+docker exec -it postgres-container psql -U myuser -d mydatabase
 
 ## Check your written data out!
-## SELECT * FROM users;
+SELECT * FROM users;
