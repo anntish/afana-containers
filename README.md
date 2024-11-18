@@ -1,5 +1,14 @@
 # RUN
-## sudo docker-compose -f docker-compose.yml up --build
+## docker-compose up --build
+
+# .env
+POSTGRES_USER=myuser
+POSTGRES_PASSWORD=mypassword
+POSTGRES_DB=mydatabase
+DATABASE_URL=postgresql://myuser:mypassword@postgres:5432/mydatabase
+
+GF_SECURITY_ADMIN_USER=admin
+GF_SECURITY_ADMIN_PASSWORD=admin
 
 # TEST
 ## Открыть URL http://localhost:8000/docs 
@@ -58,8 +67,8 @@ reservations - минимум, который предоставлен серв�
 
 # DOCKER-COMPOSE UP FOR ONLY CERTAIN CONTAINERS
 
-При запуске композа можно указать, какой именно сервис запускать. К примеру, запустим на фоне сервис client:
+При запуске композа можно указать, какой именно сервис запускать. К примеру, запустим на фоне сервис fastapi:
 
-docker-compose up -d client
+docker-compose up fastapi
 
 Почитать: https://stackoverflow.com/questions/30233105/docker-compose-up-for-only-certain-containers
