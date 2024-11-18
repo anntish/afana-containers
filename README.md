@@ -1,15 +1,6 @@
 # RUN
 ## docker-compose up --build
 
-# .env
-- POSTGRES_USER=myuser
-- POSTGRES_PASSWORD=mypassword
-- POSTGRES_DB=mydatabase
-- DATABASE_URL=postgresql://myuser:mypassword@postgres:5432/mydatabase
-
-- GF_SECURITY_ADMIN_USER=admin
-- GF_SECURITY_ADMIN_PASSWORD=admin
-
 # TEST
 ## Открыть URL http://localhost:8000/docs 
 
