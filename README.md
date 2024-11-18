@@ -39,14 +39,8 @@ SELECT * FROM users;
 
 Да, можно ограничивать ресурсы для сервисов. Можно написать так:
 
-deploy:
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
+![image](https://github.com/user-attachments/assets/57de3001-4922-4cb9-8f72-7733a374ac8c)
+
           
 limits - максимум, сколько получит сервис. В данном случае 50% от одного ядра процессора и 512 мб оперативной памяти
 reservations - минимум, который предоставлен сервису
