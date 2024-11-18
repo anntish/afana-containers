@@ -42,7 +42,7 @@ SELECT * FROM users;
 ![image](https://github.com/user-attachments/assets/57de3001-4922-4cb9-8f72-7733a374ac8c)
 
           
-limits - максимум, сколько получит сервис. В данном случае 50% от одного ядра процессора и 512 мб оперативной памяти
+limits - максимум, сколько получит сервис. В данном случае 50% от одного ядра процессора и 512 мб оперативной памяти\
 reservations - минимум, который предоставлен сервису
 
 # DOCKER-COMPOSE UP FOR ONLY CERTAIN CONTAINERS
