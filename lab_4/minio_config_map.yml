@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minio-configmap
+  labels:
+    app: minio
+data:
+  AWS_ACCESS_KEY_ID: "skibidisigma"
+  AWS_SECRET_ACCESS_KEY: "toiletrizz"

@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow
+  labels:
+    app: mlflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mlflow
+  template:
+    metadata:
+      labels:
+        app: mlflow
+    spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: postgres:14
+        command:
+        - /bin/sh
+        - -c
+        - |
+          until pg_isready -h mlflow-postgres -p 5432; do
+            echo "Waiting for PostgreSQL...";
+            sleep 5;
+          done
+      - name: setup-minio-client
+        image: minio/mc:latest
+        env:
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              configMapKeyRef:
+                name: minio-configmap
+                key: AWS_ACCESS_KEY_ID
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              configMapKeyRef:
+                name: minio-configmap
+                key: AWS_SECRET_ACCESS_KEY
+        command:
+        - /bin/sh
+        - -c
+        - |
+          until (/usr/bin/mc alias set minio http://minio:9000 ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY}); do
+          sleep 2;
+          done &&
+          /usr/bin/mc mb minio/mlflow;
+          exit 0;
+      containers:
+      - name: mlflow
+        image: minure/my-custom-mlflow:latest
+        env:
+        - name: MLFLOW_TRACKING_URI
+          value: http://mlflow:5000
+        - name: MLFLOW_BACKEND_STORE_URI
+          valueFrom:
+              configMapKeyRef:
+                name: mlflow-postgres-configmap
+                key: MLFLOW_BACKEND_STORE_URI
+        - name: MLFLOW_DEFAULT_ARTIFACT_ROOT
+          value: s3://mlflow/artifacts
+        - name: MLFLOW_S3_ENDPOINT_URL
+          value: http://minio:9000
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            configMapKeyRef:
+              name: minio-configmap
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: minio-configmap
+              key: AWS_SECRET_ACCESS_KEY
+        ports:
+        - containerPort: 5000
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        command:
+        - mlflow
+        - server
+        - --backend-store-uri
+        - ${MLFLOW_BACKEND_STORE_URI}
+        - --default-artifact-root
+        - s3://mlflow/artifacts
+        - --host
+        - 0.0.0.0
+        - --port
+        - "5000"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlflow
+spec:
+  ports:
+  - name: mlflow-ui
+    port: 5000
+    targetPort: 5000
+  selector:
+    app: mlflow

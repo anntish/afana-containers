@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init
+spec:
+  template:
+    metadata:
+      labels:
+        app: init
+    spec:
+      initContainers:
+        - name: wait-for-mlflow
+          image: appropriate/curl
+          command:
+          - /bin/sh
+          - -c
+          - |
+            until curl -s http://mlflow:5000/health; do
+            echo "Waiting for MLflow...";
+            sleep 5;
+            done
+      containers:
+        - name: init
+          image: minure/ml-model-init-train:latest
+          volumeMounts:
+            - mountPath: /app/models
+              name: model-storage
+          env:
+            - name: DATASET_PATH
+              value: /app/data/dataset.csv
+            - name: MODEL_PATH
+              value: /app/models/model.pkl
+            - name: MLFLOW_TRACKING_URI
+              value: http://mlflow:5000
+            - name: MLFLOW_ARTIFACT_STORE
+              value: s3://mlflow/artifacts
+            - name: MLFLOW_S3_ENDPOINT_URL
+              value: http://minio:9000
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: minio-configmap
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: minio-configmap
+                  key: AWS_SECRET_ACCESS_KEY
+          command: 
+            - /bin/bash
+            - -c
+            - |
+              python generate_dataset.py &&
+              python train_model.py &&
+              python validate_model.py
+      restartPolicy: Never
+      volumes:
+        - name: model-storage
+          persistentVolumeClaim:
+            claimName: model-storage-claim
